@@ -11,20 +11,81 @@ toc: true
 
 ```{r}
 #| label: label-me-1
+options(warn=-1)
+if (!require("pacman")) 
+  install.packages("pacman")
+
+# use this line for installing/loading
+pacman::p_load(tidyverse,
+               glue,
+               scales,
+               openintro,
+               gridExtra,
+               ggrepel,
+               ggmap,
+               ggridges,
+               dsbox,
+               devtools,
+               fs,
+               janitor) 
+```
+
+**A new day, a new plot, a new geom.** The goal of this exercise is to learn about a new type of plot (ridgeline plot) and to learn how to make it.
+
+Use the `geom_density_ridges()` function from the **ggridges** package to make a ridge plot of of Airbnb review scores of Edinburgh neighborhoods. *The neighborhoods should be ordered by their median review scores.* The data can be found in the **dsbox** package, and it’s called `edibnb`. *Also include an interpretation for your visualization.* You should review feedback from your Homework 1 to make sure you capture anything you may have missed previously.
+
+*(Note:* This is not a geom we introduced in class, so seeing an example of it in action will be helpful. Read the package README at <https://wilkelab.org/ggridges> and/or the introduction vignette at <https://wilkelab.org/ggridges/articles/introduction.html>. There is more information than you need for this question in the vignette; the first section on Geoms should be sufficient to help you get started.)
+
+```{r}
+devtools::install_github("tidyverse/dsbox")
+library(dsbox)
+my_edibnb_data <- edibnb
+```
+
+```{r}
+library(ggplot2)
+library(ggridges)
+
+ggplot(my_edibnb_data %>% filter(!is.na(review_scores_rating)), 
+       aes(x = review_scores_rating, 
+           y = fct_reorder(neighbourhood, 
+                           review_scores_rating, .fun = median), 
+           fill = neighbourhood)) +
+  geom_density_ridges() +
+  xlim(75, 105) +
+  labs(title = "Edinburgh - Ridge Plot",
+      x = "Review Score Rating",
+      y = "Neighbourhood")
+# Observations:
+
+# The plot above showing the ridge lines per neighborhoods in the city of Scotland, shows that all of the neighborhoods have very similar ratings, centered at ~95. All of the neighborhoods have a small hump at 80, and then they increase, until they reach 100. Based on the data, I would think that we should get a very good experience renting a house in Edinburgh.
+```
+
+```{r}
+# get a list of files with "Foreign Connected PAC" in their names
+list_of_files <- dir_ls(path = "data", regexp = "Foreign Connected PAC")
+
+# read all files and row bind them
+# keeping track of the file name in a new column called year
+pac <- read_csv(list_of_files, id = "year")
+```
+
+```{r}
+pac <- pac |>
+  separate(year, into = c("source", "year_2"), sep = "-")
+
 
 ```
 
-## 2 - Foreign Connected PACs
-
 ```{r}
-#| label: label-me-2
+pac$year_2 <- gsub("\\.csv$", "", pac$year_2)
+```
 
+```         
 ```
 
 ## 3 - Median housing prices in the US
 
-
 ## 4 - Expect More. Plot More.
-
 
 ## 5 - Mirror, mirror on the wall, who’s the ugliest of them all?
