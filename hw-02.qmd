@@ -1,6 +1,6 @@
 ---
 title: "HW 02"
-author: "INSERT YOUR NAME HERE"
+author: "Cedric Destin"
 format: 
   html:
     embed-resources: true
@@ -71,20 +71,111 @@ pac <- read_csv(list_of_files, id = "year")
 ```
 
 ```{r}
+library(stringr)
+library(dplyr)
 pac <- pac |>
-  separate(year, into = c("source", "year_2"), sep = "-")
+  mutate(
+    # Create a new column named 'election_year'
+    year = str_extract(year, "(?<=-)\\d{4}"),
 
+    # Convert the new column from text to a number (optional but recommended)
+    year = as.numeric(year),
+    pac_name_affiliate = `PAC Name (Affiliate)`,
+    Democrat = as.numeric(str_extract(Dems, "\\d+")),
+    Republican = as.numeric(str_extract(Repubs, "\\d+"))
+  )
+
+pac <- pac |>
+  separate(
+    col = `Country of Origin/Parent Company`,
+    into = c("country", "parent_company"),
+    sep = "/",
+    extra = "merge",
+    remove = TRUE
+  )
+
+pac <- pac |>
+  select(-`PAC Name (Affiliate)`)
+pac <- pac |>
+  select(-Dems)
+pac <- pac |>
+  select(-Repubs)
+pac <- pac |>
+  select(-Total)
 
 ```
 
 ```{r}
-pac$year_2 <- gsub("\\.csv$", "", pac$year_2)
+pac <- pac %>%
+  pivot_longer(
+    cols = c(Democrat, Republican),
+    names_to = "party",
+    values_to = "amount"
+  )
+
+head(pac)
+```
+
+```{r}
+sum_per_category <- pac %>%
+  group_by(year, party, country) %>%
+  summarize(Total_Value = sum(amount), .groups = "keep")
+
+```
+
+```{r}
+ggplot(data = filter(sum_per_category, country == "UK"),
+          aes(x = year, 
+              y = Total_Value, 
+              group = party,
+              color = party)
+       ) + 
+  geom_line(linewidth = 1) +
+  guides(color = guide_legend(title = "Party")) +
+  scale_color_manual(values = c("blue", "red")) +
+  scale_y_continuous(labels = function(x) paste0("$", x/1000000, "M")) +
+  theme_minimal() +
+  theme(legend.position = "inside",
+      legend.position.inside = c(0.95,0.2),
+      axis.title.x = element_text(hjust=0),
+      axis.title.y = element_text(hjust=0)) +
+  labs(title = "Contributions to US political parties from UK-connected PACs",
+       x = "Year",
+       y = "Total amount",
+       caption = "OpenSecrets.org")
+```
+
+```{r}
+ggplot(data = filter(sum_per_category, country == "China"),
+          aes(x = year, 
+              y = Total_Value, 
+              group = party,
+              color = party)
+       ) + 
+  geom_line(linewidth = 1) +
+  guides(color = guide_legend(title = "Party")) +
+  scale_color_manual(values = c("blue", "red")) +
+  scale_y_continuous(labels = function(x) paste0("$", x/1000000, "M")) +
+  theme_minimal() +
+  theme(legend.position = "inside",
+      legend.position.inside = c(0.9,0.15),
+      axis.title.x = element_text(hjust=0),
+      axis.title.y = element_text(hjust=0)) +
+  labs(title = "Contributions to US political parties from China-connected PACs",
+       x = "Year",
+       y = "Total amount",
+       caption = "OpenSecrets.org")
 ```
 
 ```         
+This new data that was just made is very interesting! Although the Chinese affiliated countries invested less than the UK affiliated countries, the Chinese affiliated countries increased the total countributions to the US elections increased over the years. And despite the Republicans being agains the Chinese government, the Republican donations still increased in the recent years.
 ```
 
 ## 3 - Median housing prices in the US
+
+```{r}
+
+```
 
 ## 4 - Expect More. Plot More.
 
