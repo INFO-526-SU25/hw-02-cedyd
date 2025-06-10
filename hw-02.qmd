@@ -1,6 +1,6 @@
 ---
 title: "HW 02"
-author: "INSERT YOUR NAME HERE"
+author: "Cedric Destin"
 format: 
   html:
     embed-resources: true
@@ -221,10 +221,6 @@ recessions <- read_csv(here("data", "recessions.csv"),
 ```
 
 ```{r}
-max(housing$date)
-```
-
-```{r}
 recessions <- recessions |> 
   mutate(
     during = ifelse(
@@ -345,10 +341,6 @@ ggp +                               # Draw ggplot2 plot with multiple axes
        Sources: Census; HUD")+
   theme(axis.ticks.x = element_blank()) +
   theme(axis.text.x = element_blank())
-```
-
-```{r}
-
 ```
 
 ## 4 - Expect More. Plot More.
